@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"fmt"
 	"log/slog"
 	"os"
 	"sync"
@@ -12,7 +11,6 @@ import (
 	"github.com/go-jose/go-jose/v4/json"
 	"github.com/sandertv/gophertunnel/minecraft"
 	"github.com/sandertv/gophertunnel/minecraft/auth"
-	"github.com/sandertv/gophertunnel/minecraft/protocol/packet"
 	"golang.org/x/oauth2"
 )
 
@@ -110,10 +108,6 @@ func handleConn(conn *minecraft.Conn, listener *minecraft.Listener, conf config,
 					_ = listener.Disconnect(conn, disc.Error())
 				}
 				return
-			}
-			switch pk := pk.(type) {
-			case *packet.Animate:
-				fmt.Printf("%#v\n", pk)
 			}
 			if err := conn.WritePacket(pk); err != nil {
 				return
