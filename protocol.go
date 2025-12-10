@@ -62,9 +62,15 @@ func (proto proto) ConvertToLatest(pk packet.Packet, conn *minecraft.Conn) []pac
 	switch pkt := pk.(type) {
 	case *animatePacket:
 		return single(&packet.Animate{
-			ActionType:      pkt.ActionType,
+			ActionType:      uint8(pkt.ActionType),
 			EntityRuntimeID: pkt.EntityRuntimeID,
-			RowingTime:      pkt.RowingTime,
+			// Rowing time maps to the generic data field for row actions.
+			Data: func() float32 {
+				if pkt.ActionType == animateActionRowLeft || pkt.ActionType == animateActionRowRight {
+					return pkt.RowingTime
+				}
+				return 0
+			}(),
 		})
 	}
 	return proto.itemTranslator.UpgradeItemPackets(single(pk), conn)
@@ -77,10 +83,11 @@ func (proto proto) ConvertFromLatest(pk packet.Packet, conn *minecraft.Conn) []p
 		}
 	case *packet.Animate:
 		return packetF(packet.IDAnimate, func(io protocol.IO) {
-			io.Varint32(&pkt.ActionType)
+			action := int32(pkt.ActionType)
+			io.Varint32(&action)
 			io.Varuint64(&pkt.EntityRuntimeID)
-			if pkt.ActionType == packet.AnimateActionRowLeft || pkt.ActionType == packet.AnimateActionRowRight {
-				io.Float32(&pkt.RowingTime)
+			if pkt.ActionType == animateActionRowLeft || pkt.ActionType == animateActionRowRight {
+				io.Float32(&pkt.Data)
 			}
 		})
 	case *packet.BiomeDefinitionList:

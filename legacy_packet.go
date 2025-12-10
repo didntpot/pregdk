@@ -12,11 +12,16 @@ type animatePacket struct {
 	RowingTime      float32
 }
 
+const (
+	animateActionRowRight = 128
+	animateActionRowLeft  = 129
+)
+
 func (pk *animatePacket) ID() uint32 { return packet.IDAnimate }
 func (pk *animatePacket) Marshal(io protocol.IO) {
 	io.Varint32(&pk.ActionType)
 	io.Varuint64(&pk.EntityRuntimeID)
-	if pk.ActionType == packet.AnimateActionRowLeft || pk.ActionType == packet.AnimateActionRowRight {
+	if pk.ActionType == animateActionRowLeft || pk.ActionType == animateActionRowRight {
 		io.Float32(&pk.RowingTime)
 	}
 }
